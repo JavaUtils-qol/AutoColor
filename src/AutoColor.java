@@ -28,4 +28,21 @@ public class AutoColor {
         }
         return finalStr;
     }
+
+    public static String colorize(String str, String regexDelim, String... hexColors) {
+        String[] strs = str.split(regexDelim);
+        String finalStr = "";
+        int index = 0;
+        int hexIndex = 0;
+        while(index != strs.length) {
+            hexIndex = index;
+            if(hexIndex >= hexColors.length) hexIndex = hexColors.length - 1;
+            int red = Integer.valueOf(hexColors[hexIndex].substring(1, 3), 16);
+            int green = Integer.valueOf(hexColors[hexIndex].substring(3, 5), 16);
+            int blue = Integer.valueOf(hexColors[hexIndex].substring(5, 7), 16);
+            finalStr = finalStr + "\033[1;38;2;" + red + ";" + green + ";" + blue + "m" + strs[index] + "\033[0m";
+            index++;
+        }
+        return finalStr;
+    }
 }
