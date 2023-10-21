@@ -21,6 +21,12 @@ public class AutoColor {
         Double_Underline
     }
 
+    public static enum Accuracy {
+        Smooth,
+        Accurate,
+        Average
+    }
+
     private static boolean[] _config = new boolean[] { false, false, false, false, false, false };
 
     /**
@@ -41,10 +47,12 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String hexColor) {
+        // convert hex to rgb
         int red = Integer.valueOf(hexColor.substring(1, 3), 16);
         int green = Integer.valueOf(hexColor.substring(3, 5), 16);
         int blue = Integer.valueOf(hexColor.substring(5, 7), 16);
-        return "\033[" + setupConfigANSI() + "38;2;" + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
+        // create colored text
+        return setupANSI(str, red, green, blue, false);
     }
 
     /**
@@ -57,20 +65,24 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, char delimiter, String... hexColors) {
+        // split str into multiple sections
         String[] strs = str.split(Pattern.quote(String.valueOf(delimiter)));
+        // declare vars
         String finalStr = "";
         int index = 0;
         int hexIndex = 0;
 
         while (index != strs.length) {
+            // stop hexIndex from being too big
             hexIndex = index;
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
+            // convert hex to rgb
             int red = Integer.valueOf(hexColors[hexIndex].substring(1, 3), 16);
             int green = Integer.valueOf(hexColors[hexIndex].substring(3, 5), 16);
             int blue = Integer.valueOf(hexColors[hexIndex].substring(5, 7), 16);
-            finalStr += "\033[" + setupConfigANSI() + "38;2;" + red + ";" + green + ";" + blue + "m" + strs[index]
-                    + "\033[0m";
+            // create colored text
+            finalStr += setupANSI(strs[index], red, green, blue, false);
             index++;
         }
         return finalStr;
@@ -86,22 +98,53 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String regexDelim, String... hexColors) {
+        // split str into multiple sections 
         String[] strs = str.split(regexDelim);
+        // declare vars
         String finalStr = "";
         int index = 0;
         int hexIndex = 0;
 
         while (index != strs.length) {
+            // stop hexIndex from being too big
             hexIndex = index;
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
+            // convert hex to rgb
             int red = Integer.valueOf(hexColors[hexIndex].substring(1, 3), 16);
             int green = Integer.valueOf(hexColors[hexIndex].substring(3, 5), 16);
             int blue = Integer.valueOf(hexColors[hexIndex].substring(5, 7), 16);
-            finalStr += "\033[" + setupConfigANSI() + "38;2;" + red + ";" + green + ";" + blue + "m" + strs[index]
-                    + "\033[0m";
+            // create colored text
+            finalStr += setupANSI(strs[index], red, green, blue, false);
             index++;
         }
+        return finalStr;
+    }
+
+    // gradient
+    public static String colorize(String str, String[] hexColors, Accuracy isAccurate, boolean isBackground) {
+        String finalStr = "";
+        Color[] gradient = new Color[str.length() - 1];
+
+        if(isAccurate == Accuracy.Average) {
+            Color[] firstGradient = generateGradient(str.length(), hexColors, true);
+            Color[] secondGradient = generateGradient(str.length(), hexColors, false);
+
+            int i = 0;
+            while(i != secondGradient.length) {
+                gradient[i] = firstGradient[i].average(secondGradient[i]);
+                i++;
+            }
+        } else {
+            gradient = generateGradient(str.length(), hexColors, isAccurate == Accuracy.Accurate);
+        }
+
+        int i = 0;
+        while(i != gradient.length) {
+            finalStr += gradient[i].ANSIfy(setupModifiers(), str.charAt(i), isBackground);
+            i++;
+        }
+
         return finalStr;
     }
 
@@ -148,8 +191,7 @@ public class AutoColor {
      * @param isDim              - true/false
      * @param isDoublyUnderlined - true/false
      */
-    public static void setConfig(boolean isBold, boolean isItalic, boolean isUnderlined, boolean isCrossedOut,
-            boolean isDim, boolean isDoublyUnderlined) {
+    public static void setConfig(boolean isBold, boolean isItalic, boolean isUnderlined, boolean isCrossedOut, boolean isDim, boolean isDoublyUnderlined) {
         _config = new boolean[] { isBold, isItalic, isUnderlined, isCrossedOut, isDim, isDoublyUnderlined };
     }
 
@@ -191,11 +233,35 @@ public class AutoColor {
 
 
 
-    
+
 
     private AutoColor() {} // set constructor to private to stop object creation
 
-    private static String setupConfigANSI() {
+    private class Color {
+        int r;
+        int g;
+        int b;
+
+        private Color(int red, int green, int blue) {
+            this.r = red;
+            this.g = green;
+            this.b = blue;
+        }
+
+        private String ANSIfy(String modifiers, String str, boolean isBackground) {
+            return setupANSI(str, r, g, b, isBackground);
+        }
+
+        private String ANSIfy(String modifiers, char str, boolean isBackground) {
+            return setupANSI(str, r, g, b, isBackground);
+        }
+
+        private Color average(Color secondColor) {
+            return new Color((r*5+secondColor.r)/6, (g*5+secondColor.g)/6, (b*5+secondColor.b)/6);
+        }
+    }
+
+    private static String setupModifiers() {
         String config = "";
         for (int i = 0; i < _config.length; i++) {
             if (_config[i]) {
@@ -222,5 +288,98 @@ public class AutoColor {
             }
         }
         return config;
+    }
+
+    private static String setupANSI(String str, int red, int green, int blue) {
+        return "\033[" + setupModifiers() + "38;2;" + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
+    }
+    
+    private static String setupANSI(char str, int red, int green, int blue) {
+        return "\033[" + setupModifiers() + "38;2;" + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
+    }
+
+    private static String setupANSI(String str, int red, int green, int blue, boolean isBackground) {
+        return "\033[" + setupModifiers() + (isBackground ? "48;2;" : "38;2;") + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
+    }
+
+    private static String setupANSI(char str, int red, int green, int blue, boolean isBackground) {
+        return "\033[" + setupModifiers() + (isBackground ? "48;2;" : "38;2;") + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
+    }
+
+    private static Color[] generateGradient(int characters, String[] hexColors, boolean isAccurate) {
+        AutoColor obj = new AutoColor();
+        Color[] finalColors = new Color[characters - 1];
+        int gradientStep = characters / (hexColors.length - 1);
+        int i = 0;
+        int j = 0;
+
+        while(i != hexColors.length - 1) {
+            int redDif = (Integer.valueOf(hexColors[i].substring(1, 3), 16) - Integer.valueOf(hexColors[i+1].substring(1, 3), 16)) / gradientStep;
+            int greenDif = (Integer.valueOf(hexColors[i].substring(3, 5), 16) - Integer.valueOf(hexColors[i+1].substring(3, 5), 16)) / gradientStep;
+            int blueDif = (Integer.valueOf(hexColors[i].substring(5, 7), 16) - Integer.valueOf(hexColors[i+1].substring(5, 7), 16)) / gradientStep;
+            
+            int red = Integer.valueOf(hexColors[i].substring(1, 3), 16);
+            int green = Integer.valueOf(hexColors[i].substring(3, 5), 16);
+            int blue = Integer.valueOf(hexColors[i].substring(5, 7), 16);
+
+            if(i == 0) {
+                finalColors[j] = obj.new Color(red, green, blue);
+                j++;
+            }
+    
+            while(j != (gradientStep * (i + 1)) - 1) {
+                red -= redDif;
+                green -= greenDif;
+                blue -= blueDif;
+                
+                finalColors[j] = obj.new Color(red, green, blue);
+                j++;
+            }
+
+            if(i != hexColors.length - 2 && isAccurate) {
+                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
+                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
+                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
+                
+                finalColors[j] = obj.new Color(red, green, blue);
+            } else if (i != hexColors.length - 2) {
+                red -= redDif;
+                green -= greenDif;
+                blue -= blueDif;
+
+                hexColors[i+1] = decimalToHex(red, green, blue);
+                
+                finalColors[j] = obj.new Color(red, green, blue);
+            } else if (isAccurate) {
+                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
+                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
+                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
+                
+                while(j != characters) {
+                    finalColors[j-1] = obj.new Color(red, green, blue);
+                    j++;
+                }
+            } else {
+                while(j != characters) {
+                red -= redDif;
+                green -= greenDif;
+                blue -= blueDif;
+
+                finalColors[j-1] = obj.new Color(red, green, blue);
+                j++;
+                }
+            }
+            j++;
+            i++;
+        }
+
+        return finalColors;
+    }
+
+    private static String decimalToHex(int red, int green, int blue) {
+        String redHex = Integer.toHexString(red).length() == 1 ? "0" + Integer.toHexString(red) : Integer.toHexString(red);
+        String greenHex = Integer.toHexString(green).length() == 1 ? "0" + Integer.toHexString(green) : Integer.toHexString(green);
+        String blueHex = Integer.toHexString(blue).length() == 1 ? "0" + Integer.toHexString(blue) : Integer.toHexString(blue);
+        return "#" + redHex + greenHex + blueHex;
     }
 }
