@@ -47,12 +47,9 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String hexColor) {
-        // convert hex to rgb
-        int red = Integer.valueOf(hexColor.substring(1, 3), 16);
-        int green = Integer.valueOf(hexColor.substring(3, 5), 16);
-        int blue = Integer.valueOf(hexColor.substring(5, 7), 16);
+        AutoColor obj = new AutoColor();
         // create colored text
-        return setupANSI(str, red, green, blue, false);
+        return obj.new Color(hexColor).ANSIfy(setupModifiers(), str, false);
     }
 
     /**
@@ -68,6 +65,7 @@ public class AutoColor {
         // split str into multiple sections
         String[] strs = str.split(Pattern.quote(String.valueOf(delimiter)));
         // declare vars
+        AutoColor obj = new AutoColor();
         String finalStr = "";
         int index = 0;
         int hexIndex = 0;
@@ -77,12 +75,8 @@ public class AutoColor {
             hexIndex = index;
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
-            // convert hex to rgb
-            int red = Integer.valueOf(hexColors[hexIndex].substring(1, 3), 16);
-            int green = Integer.valueOf(hexColors[hexIndex].substring(3, 5), 16);
-            int blue = Integer.valueOf(hexColors[hexIndex].substring(5, 7), 16);
             // create colored text
-            finalStr += setupANSI(strs[index], red, green, blue, false);
+            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -101,6 +95,7 @@ public class AutoColor {
         // split str into multiple sections 
         String[] strs = str.split(regexDelim);
         // declare vars
+        AutoColor obj = new AutoColor();
         String finalStr = "";
         int index = 0;
         int hexIndex = 0;
@@ -110,12 +105,8 @@ public class AutoColor {
             hexIndex = index;
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
-            // convert hex to rgb
-            int red = Integer.valueOf(hexColors[hexIndex].substring(1, 3), 16);
-            int green = Integer.valueOf(hexColors[hexIndex].substring(3, 5), 16);
-            int blue = Integer.valueOf(hexColors[hexIndex].substring(5, 7), 16);
             // create colored text
-            finalStr += setupANSI(strs[index], red, green, blue, false);
+            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -238,14 +229,20 @@ public class AutoColor {
     private AutoColor() {} // set constructor to private to stop object creation
 
     private class Color {
-        int r;
-        int g;
-        int b;
+        private final int r;
+        private final int g;
+        private final int b;
 
         private Color(int red, int green, int blue) {
             this.r = red;
             this.g = green;
             this.b = blue;
+        }
+
+        private Color(String hex) {
+            this.r = Integer.valueOf(hex.substring(1, 3), 16);
+            this.g = Integer.valueOf(hex.substring(3, 5), 16);
+            this.b = Integer.valueOf(hex.substring(5, 7), 16);
         }
 
         private String ANSIfy(String modifiers, String str, boolean isBackground) {
