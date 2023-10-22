@@ -112,7 +112,22 @@ public class AutoColor {
         return finalStr;
     }
 
-    // gradient
+    /**
+     * Will take a String and color each character according to a gradient with the given start, intermediate and end colors.
+     * <br><br>
+     * The accuracy parameter works as follows: 
+     * <ul>
+     * <li><b>Smooth</b>: will most likely not pass through the original values but will instead always use the previous color value.
+     * <li><b>Accurate</b>: will always pass through the original values at the cost of a less smooth gradient.
+     * <li><b>Average</b>: will take the average between the smooth and accurate gradients at a ratio of 5:1.
+     * </ul>
+     * 
+     * @param str          - text to color
+     * @param hexColors    - multiple hex values that serve as setpoints for the gradient
+     * @param isAccurate   - accuracy of the gradient to the given hex values
+     * @param isBackground - whether or not to set the gradient to the background
+     * @return <b>colored text</b> (String)
+     */
     public static String colorize(String str, String[] hexColors, Accuracy isAccurate, boolean isBackground) {
         String finalStr = "";
         Color[] gradient = new Color[str.length() - 1];

@@ -1,5 +1,5 @@
 public class Test {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         AutoColor.setConfig(AutoColor.Config.Bold);
         System.out.println(AutoColor.colorize(true));
         System.out.println(AutoColor.colorize("white", "#f0f0f0"));
