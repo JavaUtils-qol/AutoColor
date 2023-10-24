@@ -22,8 +22,23 @@ public class AutoColor {
     }
 
     public static enum Accuracy {
+        /**
+         * Will most likely not pass through the original values but will instead always use the previous color value as reference.
+         * <br><br>
+         * This effect will become more apparent the longer the String is.
+         */
         Smooth,
+        /**
+         * Will always pass through the original values at the cost of a less smooth gradient.
+         * <br><br>
+         * This effect will become more apparent the longer the String is.
+         */
         Accurate,
+        /**
+         * Will take the average between the smooth and accurate gradients at a ratio of 5:1.
+         * <br><br>
+         * This requires more computer resources and time.
+         */
         Average
     }
 
@@ -47,9 +62,8 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String hexColor) {
-        AutoColor obj = new AutoColor();
         // create colored text
-        return obj.new Color(hexColor).ANSIfy(setupModifiers(), str, false);
+        return new AutoColor().new Color(hexColor).ANSIfy(setupModifiers(), str, false);
     }
 
     /**
@@ -114,13 +128,6 @@ public class AutoColor {
 
     /**
      * Will take a String and color each character according to a gradient with the given start, intermediate and end colors.
-     * <br><br>
-     * The accuracy parameter works as follows: 
-     * <ul>
-     * <li><b>Smooth</b>: will most likely not pass through the original values but will instead always use the previous color value.
-     * <li><b>Accurate</b>: will always pass through the original values at the cost of a less smooth gradient.
-     * <li><b>Average</b>: will take the average between the smooth and accurate gradients at a ratio of 5:1.
-     * </ul>
      * 
      * @param str          - text to color
      * @param hexColors    - multiple hex values that serve as setpoints for the gradient
@@ -129,22 +136,28 @@ public class AutoColor {
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String[] hexColors, Accuracy isAccurate, boolean isBackground) {
+        str += " "; // to let the last character be displayed
+        // declaring vars
         String finalStr = "";
         Color[] gradient = new Color[str.length() - 1];
 
+        // check Accuracy is average
         if(isAccurate == Accuracy.Average) {
+            // calculating the gradients to be averaged
             Color[] firstGradient = generateGradient(str.length(), hexColors, true);
             Color[] secondGradient = generateGradient(str.length(), hexColors, false);
-
+            
+            // calculating the average between the two gradients
             int i = 0;
             while(i != secondGradient.length) {
-                gradient[i] = firstGradient[i].average(secondGradient[i]);
+                gradient[i] = Color.average(firstGradient[i], secondGradient[i]);
                 i++;
             }
         } else {
             gradient = generateGradient(str.length(), hexColors, isAccurate == Accuracy.Accurate);
         }
 
+        // ANSIfy the gradient
         int i = 0;
         while(i != gradient.length) {
             finalStr += gradient[i].ANSIfy(setupModifiers(), str.charAt(i), isBackground);
@@ -244,32 +257,32 @@ public class AutoColor {
     private AutoColor() {} // set constructor to private to stop object creation
 
     private class Color {
-        private final int r;
-        private final int g;
-        private final int b;
+        private final int _kRed;
+        private final int _kGreen;
+        private final int _kBlue;
 
         private Color(int red, int green, int blue) {
-            this.r = red;
-            this.g = green;
-            this.b = blue;
+            this._kRed = red;
+            this._kGreen = green;
+            this._kBlue = blue;
         }
 
         private Color(String hex) {
-            this.r = Integer.valueOf(hex.substring(1, 3), 16);
-            this.g = Integer.valueOf(hex.substring(3, 5), 16);
-            this.b = Integer.valueOf(hex.substring(5, 7), 16);
+            this._kRed = Integer.valueOf(hex.substring(1, 3), 16);
+            this._kGreen = Integer.valueOf(hex.substring(3, 5), 16);
+            this._kBlue = Integer.valueOf(hex.substring(5, 7), 16);
         }
 
         private String ANSIfy(String modifiers, String str, boolean isBackground) {
-            return setupANSI(str, r, g, b, isBackground);
+            return setupANSI(str, _kRed, _kGreen, _kBlue, isBackground);
         }
 
         private String ANSIfy(String modifiers, char str, boolean isBackground) {
-            return setupANSI(str, r, g, b, isBackground);
+            return setupANSI(str, _kRed, _kGreen, _kBlue, isBackground);
         }
 
-        private Color average(Color secondColor) {
-            return new Color((r*5+secondColor.r)/6, (g*5+secondColor.g)/6, (b*5+secondColor.b)/6);
+        private static Color average(Color firstColor, Color secondColor) {
+            return new AutoColor().new Color((firstColor._kRed*5+secondColor._kRed)/6, (firstColor._kGreen*5+secondColor._kGreen)/6, (firstColor._kBlue*5+secondColor._kBlue)/6);
         }
     }
 
@@ -300,14 +313,6 @@ public class AutoColor {
             }
         }
         return config;
-    }
-
-    private static String setupANSI(String str, int red, int green, int blue) {
-        return "\033[" + setupModifiers() + "38;2;" + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
-    }
-    
-    private static String setupANSI(char str, int red, int green, int blue) {
-        return "\033[" + setupModifiers() + "38;2;" + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
     }
 
     private static String setupANSI(String str, int red, int green, int blue, boolean isBackground) {
@@ -354,6 +359,7 @@ public class AutoColor {
                 blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
                 
                 finalColors[j] = obj.new Color(red, green, blue);
+                j++;
             } else if (i != hexColors.length - 2) {
                 red -= redDif;
                 green -= greenDif;
@@ -362,6 +368,7 @@ public class AutoColor {
                 hexColors[i+1] = decimalToHex(red, green, blue);
                 
                 finalColors[j] = obj.new Color(red, green, blue);
+                j++;
             } else if (isAccurate) {
                 red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
                 green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
@@ -373,15 +380,14 @@ public class AutoColor {
                 }
             } else {
                 while(j != characters) {
-                red -= redDif;
-                green -= greenDif;
-                blue -= blueDif;
+                    red -= redDif;
+                    green -= greenDif;
+                    blue -= blueDif;
 
-                finalColors[j-1] = obj.new Color(red, green, blue);
-                j++;
+                    finalColors[j-1] = obj.new Color(red, green, blue);
+                    j++;
                 }
             }
-            j++;
             i++;
         }
 
