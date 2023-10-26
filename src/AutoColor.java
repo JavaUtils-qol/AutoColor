@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -5,7 +6,7 @@ import java.util.regex.Pattern;
  * <br>
  * <br>
  * For more info about ANSI escape codes visit:
- * https://en.wikipedia.org/wiki/ANSI_escape_code
+ * <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code Wikipedia</a>
  */
 public class AutoColor {
     /**
@@ -42,11 +43,11 @@ public class AutoColor {
         Average
     }
 
-    private static boolean[] _config = new boolean[] { false, false, false, false, false, false };
+    private static boolean[] _config = new boolean[]{false, false, false, false, false, false};
 
     /**
      * Will take true/false as input and color it to green/red.
-     * 
+     *
      * @param bool - boolean to color
      * @return <b>colored text</b> (String) - green/red
      */
@@ -56,20 +57,20 @@ public class AutoColor {
 
     /**
      * Will take a String and color it according to the given hex value.
-     * 
+     *
      * @param str      - text to color
      * @param hexColor - #xxxxxx
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String hexColor) {
         // create colored text
-        return new AutoColor().new Color(hexColor).ANSIfy(setupModifiers(), str, false);
+        return new Color(hexColor).ANSIfy(setupModifiers(), str, false);
     }
 
     /**
      * Will take a String and split it according to the given char delimiter then
      * will color those according to the given hex values.
-     * 
+     *
      * @param str       - text to split and then color
      * @param delimiter - character to split the text at
      * @param hexColors - multiple hex values
@@ -82,7 +83,7 @@ public class AutoColor {
         AutoColor obj = new AutoColor();
         String finalStr = "";
         int index = 0;
-        int hexIndex = 0;
+        int hexIndex;
 
         while (index != strs.length) {
             // stop hexIndex from being too big
@@ -90,7 +91,7 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr += new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -99,7 +100,7 @@ public class AutoColor {
     /**
      * Will take a String and split it according to the given regex delimiter then
      * will color those according to the given hex values.
-     * 
+     *
      * @param str        - text to split and then color
      * @param regexDelim - regex to split the text at
      * @param hexColors  - multiple hex values
@@ -112,7 +113,7 @@ public class AutoColor {
         AutoColor obj = new AutoColor();
         String finalStr = "";
         int index = 0;
-        int hexIndex = 0;
+        int hexIndex;
 
         while (index != strs.length) {
             // stop hexIndex from being too big
@@ -120,7 +121,7 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr += new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -128,11 +129,11 @@ public class AutoColor {
 
     /**
      * Will take a String and color each character according to a gradient with the given start, intermediate and end colors.
-     * 
+     *
      * @param str          - text to color
      * @param hexColors    - multiple hex values that serve as setpoints for the gradient
      * @param isAccurate   - accuracy of the gradient to the given hex values
-     * @param isBackground - whether or not to set the gradient to the background
+     * @param isBackground - whether to set the gradient to the background
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String[] hexColors, Accuracy isAccurate, boolean isBackground) {
@@ -142,14 +143,14 @@ public class AutoColor {
         Color[] gradient = new Color[str.length() - 1];
 
         // check Accuracy is average
-        if(isAccurate == Accuracy.Average) {
+        if (isAccurate == Accuracy.Average) {
             // calculating the gradients to be averaged
             Color[] firstGradient = generateGradient(str.length(), hexColors, true);
             Color[] secondGradient = generateGradient(str.length(), hexColors, false);
-            
+
             // calculating the average between the two gradients
             int i = 0;
-            while(i != secondGradient.length) {
+            while (i != secondGradient.length) {
                 gradient[i] = Color.average(firstGradient[i], secondGradient[i]);
                 i++;
             }
@@ -159,7 +160,7 @@ public class AutoColor {
 
         // ANSIfy the gradient
         int i = 0;
-        while(i != gradient.length) {
+        while (i != gradient.length) {
             finalStr += gradient[i].ANSIfy(setupModifiers(), str.charAt(i), isBackground);
             i++;
         }
@@ -169,13 +170,13 @@ public class AutoColor {
 
     /**
      * Allows the user to modify one of the 6 ANSI modifiers.
-     * 
+     *
      * @param config - modifier to change
      */
     public static void setConfig(Config config) {
         switch (config) {
             case Default:
-                _config = new boolean[] { false, false, false, false, false, false };
+                _config = new boolean[]{false, false, false, false, false, false};
                 break;
             case Bold:
                 _config[0] = !_config[0];
@@ -201,8 +202,8 @@ public class AutoColor {
     }
 
     /**
-     * Allows the user to modify all of the 6 ANSI modifiers.
-     * 
+     * Allows the user to modify all the 6 ANSI modifiers.
+     *
      * @param isBold             - true/false
      * @param isItalic           - true/false
      * @param isUnderlined       - true/false
@@ -211,39 +212,31 @@ public class AutoColor {
      * @param isDoublyUnderlined - true/false
      */
     public static void setConfig(boolean isBold, boolean isItalic, boolean isUnderlined, boolean isCrossedOut, boolean isDim, boolean isDoublyUnderlined) {
-        _config = new boolean[] { isBold, isItalic, isUnderlined, isCrossedOut, isDim, isDoublyUnderlined };
+        _config = new boolean[]{isBold, isItalic, isUnderlined, isCrossedOut, isDim, isDoublyUnderlined};
     }
 
     /**
      * Will return the state of the specified modifier.
-     * 
+     *
      * @param config - modifier to return
      * @return <b>state</b> of the given modifier - true/false
      */
     public static boolean getConfig(Config config) {
-        switch (config) {
-            case Default:
-                return _config == new boolean[] { false, false, false, false, false, false };
-            case Bold:
-                return _config[0];
-            case Italic:
-                return _config[1];
-            case Underline:
-                return _config[2];
-            case Crossed_Out:
-                return _config[3];
-            case Dim:
-                return _config[4];
-            case Double_Underline:
-                return _config[5];
-            default:
-                throw new EnumConstantNotPresentException(Config.class, "null");
-        }
+        return switch (config) {
+            case Default -> Arrays.equals(_config, new boolean[]{false, false, false, false, false, false});
+            case Bold -> _config[0];
+            case Italic -> _config[1];
+            case Underline -> _config[2];
+            case Crossed_Out -> _config[3];
+            case Dim -> _config[4];
+            case Double_Underline -> _config[5];
+            default -> throw new EnumConstantNotPresentException(Config.class, "null");
+        };
     }
 
     /**
      * Will return the full modifiers array.
-     * 
+     *
      * @return <b>Config array</b> - boolean[6] array
      */
     public static boolean[] getConfig() {
@@ -251,12 +244,10 @@ public class AutoColor {
     }
 
 
+    private AutoColor() {
+    } // set constructor to private to stop object creation
 
-
-
-    private AutoColor() {} // set constructor to private to stop object creation
-
-    private class Color {
+    private static class Color {
         private final int _kRed;
         private final int _kGreen;
         private final int _kBlue;
@@ -282,7 +273,7 @@ public class AutoColor {
         }
 
         private static Color average(Color firstColor, Color secondColor) {
-            return new AutoColor().new Color((firstColor._kRed*5+secondColor._kRed)/6, (firstColor._kGreen*5+secondColor._kGreen)/6, (firstColor._kBlue*5+secondColor._kBlue)/6);
+            return new Color((firstColor._kRed * 5 + secondColor._kRed) / 6, (firstColor._kGreen * 5 + secondColor._kGreen) / 6, (firstColor._kBlue * 5 + secondColor._kBlue) / 6);
         }
     }
 
@@ -330,61 +321,61 @@ public class AutoColor {
         int i = 0;
         int j = 0;
 
-        while(i != hexColors.length - 1) {
-            int redDif = (Integer.valueOf(hexColors[i].substring(1, 3), 16) - Integer.valueOf(hexColors[i+1].substring(1, 3), 16)) / gradientStep;
-            int greenDif = (Integer.valueOf(hexColors[i].substring(3, 5), 16) - Integer.valueOf(hexColors[i+1].substring(3, 5), 16)) / gradientStep;
-            int blueDif = (Integer.valueOf(hexColors[i].substring(5, 7), 16) - Integer.valueOf(hexColors[i+1].substring(5, 7), 16)) / gradientStep;
-            
+        while (i != hexColors.length - 1) {
+            int redDif = (Integer.valueOf(hexColors[i].substring(1, 3), 16) - Integer.valueOf(hexColors[i + 1].substring(1, 3), 16)) / gradientStep;
+            int greenDif = (Integer.valueOf(hexColors[i].substring(3, 5), 16) - Integer.valueOf(hexColors[i + 1].substring(3, 5), 16)) / gradientStep;
+            int blueDif = (Integer.valueOf(hexColors[i].substring(5, 7), 16) - Integer.valueOf(hexColors[i + 1].substring(5, 7), 16)) / gradientStep;
+
             int red = Integer.valueOf(hexColors[i].substring(1, 3), 16);
             int green = Integer.valueOf(hexColors[i].substring(3, 5), 16);
             int blue = Integer.valueOf(hexColors[i].substring(5, 7), 16);
 
-            if(i == 0) {
-                finalColors[j] = obj.new Color(red, green, blue);
-                j++;
-            }
-    
-            while(j != (gradientStep * (i + 1)) - 1) {
-                red -= redDif;
-                green -= greenDif;
-                blue -= blueDif;
-                
-                finalColors[j] = obj.new Color(red, green, blue);
+            if (i == 0) {
+                finalColors[j] = new Color(red, green, blue);
                 j++;
             }
 
-            if(i != hexColors.length - 2 && isAccurate) {
-                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
-                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
-                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
-                
-                finalColors[j] = obj.new Color(red, green, blue);
+            while (j != (gradientStep * (i + 1)) - 1) {
+                red -= redDif;
+                green -= greenDif;
+                blue -= blueDif;
+
+                finalColors[j] = new Color(red, green, blue);
+                j++;
+            }
+
+            if (i != hexColors.length - 2 && isAccurate) {
+                red = Integer.valueOf(hexColors[i + 1].substring(1, 3), 16);
+                green = Integer.valueOf(hexColors[i + 1].substring(3, 5), 16);
+                blue = Integer.valueOf(hexColors[i + 1].substring(5, 7), 16);
+
+                finalColors[j] = new Color(red, green, blue);
                 j++;
             } else if (i != hexColors.length - 2) {
                 red -= redDif;
                 green -= greenDif;
                 blue -= blueDif;
 
-                hexColors[i+1] = decimalToHex(red, green, blue);
-                
-                finalColors[j] = obj.new Color(red, green, blue);
+                hexColors[i + 1] = decimalToHex(red, green, blue);
+
+                finalColors[j] = new Color(red, green, blue);
                 j++;
             } else if (isAccurate) {
-                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
-                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
-                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
-                
-                while(j != characters) {
-                    finalColors[j-1] = obj.new Color(red, green, blue);
+                red = Integer.valueOf(hexColors[i + 1].substring(1, 3), 16);
+                green = Integer.valueOf(hexColors[i + 1].substring(3, 5), 16);
+                blue = Integer.valueOf(hexColors[i + 1].substring(5, 7), 16);
+
+                while (j != characters) {
+                    finalColors[j - 1] = new Color(red, green, blue);
                     j++;
                 }
             } else {
-                while(j != characters) {
+                while (j != characters) {
                     red -= redDif;
                     green -= greenDif;
                     blue -= blueDif;
 
-                    finalColors[j-1] = obj.new Color(red, green, blue);
+                    finalColors[j - 1] = new Color(red, green, blue);
                     j++;
                 }
             }
