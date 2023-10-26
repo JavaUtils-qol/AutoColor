@@ -64,7 +64,7 @@ public class AutoColor {
      */
     public static String colorize(String str, String hexColor) {
         // create colored text
-        return new Color(hexColor).ANSIfy(setupModifiers(), str, false);
+        return new AutoColor().new Color(hexColor).ANSIfy(setupModifiers(), str, false);
     }
 
     /**
@@ -91,7 +91,7 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -121,7 +121,7 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr += new AutoColor().new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
             index++;
         }
         return finalStr;
@@ -247,7 +247,7 @@ public class AutoColor {
     private AutoColor() {
     } // set constructor to private to stop object creation
 
-    private static class Color {
+    private final class Color {
         private final int _kRed;
         private final int _kGreen;
         private final int _kBlue;
@@ -273,7 +273,7 @@ public class AutoColor {
         }
 
         private static Color average(Color firstColor, Color secondColor) {
-            return new Color((firstColor._kRed * 5 + secondColor._kRed) / 6, (firstColor._kGreen * 5 + secondColor._kGreen) / 6, (firstColor._kBlue * 5 + secondColor._kBlue) / 6);
+            return new AutoColor().new Color((firstColor._kRed * 5 + secondColor._kRed) / 6, (firstColor._kGreen * 5 + secondColor._kGreen) / 6, (firstColor._kBlue * 5 + secondColor._kBlue) / 6);
         }
     }
 
@@ -331,7 +331,7 @@ public class AutoColor {
             int blue = Integer.valueOf(hexColors[i].substring(5, 7), 16);
 
             if (i == 0) {
-                finalColors[j] = new Color(red, green, blue);
+                finalColors[j] = new AutoColor().new Color(red, green, blue);
                 j++;
             }
 
@@ -340,7 +340,7 @@ public class AutoColor {
                 green -= greenDif;
                 blue -= blueDif;
 
-                finalColors[j] = new Color(red, green, blue);
+                finalColors[j] = new AutoColor().new Color(red, green, blue);
                 j++;
             }
 
@@ -349,7 +349,7 @@ public class AutoColor {
                 green = Integer.valueOf(hexColors[i + 1].substring(3, 5), 16);
                 blue = Integer.valueOf(hexColors[i + 1].substring(5, 7), 16);
 
-                finalColors[j] = new Color(red, green, blue);
+                finalColors[j] = new AutoColor().new Color(red, green, blue);
                 j++;
             } else if (i != hexColors.length - 2) {
                 red -= redDif;
@@ -358,7 +358,7 @@ public class AutoColor {
 
                 hexColors[i + 1] = decimalToHex(red, green, blue);
 
-                finalColors[j] = new Color(red, green, blue);
+                finalColors[j] = new AutoColor().new Color(red, green, blue);
                 j++;
             } else if (isAccurate) {
                 red = Integer.valueOf(hexColors[i + 1].substring(1, 3), 16);
@@ -366,7 +366,7 @@ public class AutoColor {
                 blue = Integer.valueOf(hexColors[i + 1].substring(5, 7), 16);
 
                 while (j != characters) {
-                    finalColors[j - 1] = new Color(red, green, blue);
+                    finalColors[j - 1] = new AutoColor().new Color(red, green, blue);
                     j++;
                 }
             } else {
@@ -375,7 +375,7 @@ public class AutoColor {
                     green -= greenDif;
                     blue -= blueDif;
 
-                    finalColors[j - 1] = new Color(red, green, blue);
+                    finalColors[j - 1] = new AutoColor().new Color(red, green, blue);
                     j++;
                 }
             }
