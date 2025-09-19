@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -5,13 +6,13 @@ import java.util.regex.Pattern;
  * <br>
  * <br>
  * For more info about ANSI escape codes visit:
- * https://en.wikipedia.org/wiki/ANSI_escape_code
+ * <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape codes</a>
  */
 public class AutoColor {
     /**
      * Contains all(almost) the modifiers an ANSI color code can take.
      */
-    public static enum Config {
+    public enum Config {
         Default,
         Bold,
         Italic,
@@ -21,7 +22,7 @@ public class AutoColor {
         Double_Underline
     }
 
-    public static enum Accuracy {
+    public enum Accuracy {
         /**
          * Will most likely not pass through the original values but will instead always use the previous color value as reference.
          * <br><br>
@@ -80,7 +81,7 @@ public class AutoColor {
         String[] strs = str.split(Pattern.quote(String.valueOf(delimiter)));
         // declare vars
         AutoColor obj = new AutoColor();
-        String finalStr = "";
+        StringBuilder finalStr = new StringBuilder();
         int index = 0;
         int hexIndex = 0;
 
@@ -90,10 +91,10 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr.append(obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false));
             index++;
         }
-        return finalStr;
+        return finalStr.toString();
     }
 
     /**
@@ -110,7 +111,7 @@ public class AutoColor {
         String[] strs = str.split(regexDelim);
         // declare vars
         AutoColor obj = new AutoColor();
-        String finalStr = "";
+        StringBuilder finalStr = new StringBuilder();
         int index = 0;
         int hexIndex = 0;
 
@@ -120,10 +121,10 @@ public class AutoColor {
             if (hexIndex >= hexColors.length)
                 hexIndex = hexColors.length - 1;
             // create colored text
-            finalStr += obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false);
+            finalStr.append(obj.new Color(hexColors[hexIndex]).ANSIfy(setupModifiers(), strs[index], false));
             index++;
         }
-        return finalStr;
+        return finalStr.toString();
     }
 
     /**
@@ -132,13 +133,13 @@ public class AutoColor {
      * @param str          - text to color
      * @param hexColors    - multiple hex values that serve as setpoints for the gradient
      * @param isAccurate   - accuracy of the gradient to the given hex values
-     * @param isBackground - whether or not to set the gradient to the background
+     * @param isBackground - whether to set the gradient to the background
      * @return <b>colored text</b> (String)
      */
     public static String colorize(String str, String[] hexColors, Accuracy isAccurate, boolean isBackground) {
         str += " "; // to let the last character be displayed
         // declaring vars
-        String finalStr = "";
+        StringBuilder finalStr = new StringBuilder();
         Color[] gradient = new Color[str.length() - 1];
 
         // check Accuracy is average
@@ -160,11 +161,11 @@ public class AutoColor {
         // ANSIfy the gradient
         int i = 0;
         while(i != gradient.length) {
-            finalStr += gradient[i].ANSIfy(setupModifiers(), str.charAt(i), isBackground);
+            finalStr.append(gradient[i].ANSIfy(setupModifiers(), str.charAt(i), isBackground));
             i++;
         }
 
-        return finalStr;
+        return finalStr.toString();
     }
 
     /**
@@ -201,7 +202,7 @@ public class AutoColor {
     }
 
     /**
-     * Allows the user to modify all of the 6 ANSI modifiers.
+     * Allows the user to modify all the 6 ANSI modifiers.
      * 
      * @param isBold             - true/false
      * @param isItalic           - true/false
@@ -221,24 +222,15 @@ public class AutoColor {
      * @return <b>state</b> of the given modifier - true/false
      */
     public static boolean getConfig(Config config) {
-        switch (config) {
-            case Default:
-                return _config == new boolean[] { false, false, false, false, false, false };
-            case Bold:
-                return _config[0];
-            case Italic:
-                return _config[1];
-            case Underline:
-                return _config[2];
-            case Crossed_Out:
-                return _config[3];
-            case Dim:
-                return _config[4];
-            case Double_Underline:
-                return _config[5];
-            default:
-                throw new EnumConstantNotPresentException(Config.class, "null");
-        }
+        return switch (config) {
+            case Default -> Arrays.equals(_config, new boolean[]{false, false, false, false, false, false});
+            case Bold -> _config[0];
+            case Italic -> _config[1];
+            case Underline -> _config[2];
+            case Crossed_Out -> _config[3];
+            case Dim -> _config[4];
+            case Double_Underline -> _config[5];
+        };
     }
 
     /**
@@ -287,32 +279,32 @@ public class AutoColor {
     }
 
     private static String setupModifiers() {
-        String config = "";
+        StringBuilder config = new StringBuilder();
         for (int i = 0; i < _config.length; i++) {
             if (_config[i]) {
                 switch (i) {
                     case 0: // Bold
-                        config += "1;";
+                        config.append("1;");
                         break;
                     case 1: // Italic
-                        config += "3;";
+                        config.append("3;");
                         break;
                     case 2: // Underline
-                        config += "4;";
+                        config.append("4;");
                         break;
                     case 3: // Crossed Out
-                        config += "9;";
+                        config.append("9;");
                         break;
                     case 4: // Dim
-                        config += "2;";
+                        config.append("2;");
                         break;
                     case 5: // Double Underline
-                        config += "21;";
+                        config.append("21;");
                         break;
                 }
             }
         }
-        return config;
+        return config.toString();
     }
 
     private static String setupANSI(String str, int red, int green, int blue, boolean isBackground) {
