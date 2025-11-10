@@ -11,6 +11,5 @@ public class Test {
         System.out.println();
         System.out.println(AutoColor.colorize("                                                                   ", new String[]{ "#db0000", "#eeff00", "#0007d6" }, AutoColor.Accuracy.Accurate, true));
         System.out.println();
-        System.out.println(AutoColor.colorize("                                                                   ", new String[]{ "#db0000", "#eeff00", "#0007d6" }, AutoColor.Accuracy.Average, true));
     }
 }
