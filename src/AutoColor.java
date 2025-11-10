@@ -232,7 +232,7 @@ public class AutoColor {
     }
 
     /**
-     * A class to store Colors
+     * A class to store Colors in rgb format
      */
     public static class Color {
         public final int red;
@@ -251,6 +251,17 @@ public class AutoColor {
             this.blue = Integer.valueOf(hex.substring(5, 7), 16);
         }
 
+        public String toHex() {
+            String redHex = Integer.toHexString(this.red).length() == 1 ? "0" + Integer.toHexString(this.red) : Integer.toHexString(this.red);
+            String greenHex = Integer.toHexString(this.green).length() == 1 ? "0" + Integer.toHexString(this.green) : Integer.toHexString(this.green);
+            String blueHex = Integer.toHexString(this.blue).length() == 1 ? "0" + Integer.toHexString(this.blue) : Integer.toHexString(this.blue);
+            return "#" + redHex + greenHex + blueHex;
+        }
+
+        public String toHSV() {
+            return "TODO";
+        }
+
         private String ANSIfy(String modifiers, String str, boolean isBackground) {
             return setupANSI(str, red, green, blue, isBackground);
         }
@@ -259,28 +270,48 @@ public class AutoColor {
             return setupANSI(str, red, green, blue, isBackground);
         }
     }
-    
+
     /**
-     * 
-     * @param characters - the number of colors to generate
-     * @param hexColors
-     * @param accuracy
-     * @return
+     * Generates a gradient based on hexadecimal color values
+     * @param numOfColors - the number of colors to generate
+     * @param hexColors - the base colors to use in the gradient
+     * @param accuracy - the accuracy of the colors corresponding to the base colors
+     * @return the gradient in {@code Color[]} form
      */
     public static Color[] generateGradient(int numOfColors, String[] hexColors, Accuracy accuracy) {
+        // transform hex colors into rgb ones
+        Color[] colors = new Color[hexColors.length];
+        for (int i = 0; i < hexColors.length; i++) {
+            colors[i] = new Color(
+                    Integer.valueOf(hexColors[i].substring(1, 3), 16),
+                    Integer.valueOf(hexColors[i].substring(3, 5), 16),
+                    Integer.valueOf(hexColors[i].substring(5, 7), 16));
+        }
+
+        return generateGradient(numOfColors, colors, accuracy);
+    }
+    
+    /**
+     * Generates a gradient
+     * @param numOfColors - the number of colors to generate
+     * @param hexColors - the base colors to use in the gradient
+     * @param accuracy - the accuracy of the colors corresponding to the base colors
+     * @return the gradient in {@code Color[]} form
+     */
+    public static Color[] generateGradient(int numOfColors, Color[] colors, Accuracy accuracy) {
         Color[] finalColors = new Color[numOfColors - 1];
-        int gradientStep = numOfColors / (hexColors.length - 1);
+        int gradientStep = numOfColors / (colors.length - 1);
         int i = 0;
         int j = 0;
 
-        while(i != hexColors.length - 1) {
-            int redDif = (Integer.valueOf(hexColors[i].substring(1, 3), 16) - Integer.valueOf(hexColors[i+1].substring(1, 3), 16)) / gradientStep;
-            int greenDif = (Integer.valueOf(hexColors[i].substring(3, 5), 16) - Integer.valueOf(hexColors[i+1].substring(3, 5), 16)) / gradientStep;
-            int blueDif = (Integer.valueOf(hexColors[i].substring(5, 7), 16) - Integer.valueOf(hexColors[i+1].substring(5, 7), 16)) / gradientStep;
+        while(i != colors.length - 1) {
+            int redDif = (colors[i].red - colors[i+1].red) / gradientStep;
+            int greenDif = (colors[i].green - colors[i+1].green) / gradientStep;
+            int blueDif = (colors[i].blue - colors[i+1].blue) / gradientStep;
         
-            int red = Integer.valueOf(hexColors[i].substring(1, 3), 16);
-            int green = Integer.valueOf(hexColors[i].substring(3, 5), 16);
-            int blue = Integer.valueOf(hexColors[i].substring(5, 7), 16);
+            int red = colors[i].red;
+            int green = colors[i].green;
+            int blue = colors[i].blue;
 
             if(i == 0) {
                 finalColors[j] = new Color(red, green, blue);
@@ -296,26 +327,26 @@ public class AutoColor {
                 j++;
             }
 
-            if(i != hexColors.length - 2 && accuracy == Accuracy.Accurate) {
-                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
-                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
-                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
+            if(i != colors.length - 2 && accuracy == Accuracy.Accurate) {
+                red = colors[i].red;
+                green = colors[i].green;
+                blue = colors[i].blue;
                 
                 finalColors[j] = new Color(red, green, blue);
                 j++;
-            } else if (i != hexColors.length - 2) {
+            } else if (i != colors.length - 2) {
                 red -= redDif;
                 green -= greenDif;
                 blue -= blueDif;
 
-                hexColors[i+1] = decimalToHex(red, green, blue);
+                colors[i+1] = new Color(red, green, blue);
                 
                 finalColors[j] = new Color(red, green, blue);
                 j++;
             } else if (accuracy == Accuracy.Accurate) { 
-                red = Integer.valueOf(hexColors[i+1].substring(1, 3), 16);
-                green = Integer.valueOf(hexColors[i+1].substring(3, 5), 16);
-                blue = Integer.valueOf(hexColors[i+1].substring(5, 7), 16);
+                red = colors[i+1].red;
+                green = colors[i+1].green;
+                blue = colors[i+1].blue;
                 
                 while(j != numOfColors) {
                     finalColors[j-1] = new Color(red, green, blue);
@@ -377,12 +408,5 @@ public class AutoColor {
 
     private static String setupANSI(char str, int red, int green, int blue, boolean isBackground) {
         return "\033[" + setupModifiers() + (isBackground ? "48;2;" : "38;2;") + red + ";" + green + ";" + blue + "m" + str + "\033[0m";
-    }
-
-    private static String decimalToHex(int red, int green, int blue) {
-        String redHex = Integer.toHexString(red).length() == 1 ? "0" + Integer.toHexString(red) : Integer.toHexString(red);
-        String greenHex = Integer.toHexString(green).length() == 1 ? "0" + Integer.toHexString(green) : Integer.toHexString(green);
-        String blueHex = Integer.toHexString(blue).length() == 1 ? "0" + Integer.toHexString(blue) : Integer.toHexString(blue);
-        return "#" + redHex + greenHex + blueHex;
     }
 }
